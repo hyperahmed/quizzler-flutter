@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'quiz_brain.dart';
+import 'package:flutter_alert/rflutter_alert.dart';
+
+
 
 void main() => runApp(Quizzler());
 
@@ -25,6 +29,47 @@ class QuizPage extends StatefulWidget {
 }
 
 class _QuizPageState extends State<QuizPage> {
+  QuizBrain quizBrain = QuizBrain();
+
+  List<Icon> scoreKeeper = [];
+
+  void checkAnswer( bool userPickedAns ) {
+    bool correctAns = quizBrain.getQuestionAns();
+    setState(() {
+      if (userPickedAns == correctAns) {
+        scoreKeeper.add(True);
+      } else {
+        scoreKeeper.add(False);
+      }
+    });
+
+      if(quizBrain.isFinished()){
+        Alert(
+          context: context,
+          type: AlertType.error,
+          title: "finished!",
+          desc: "you ended the quiz, Congrats!"
+        ).show();
+        quizBrain.reset();
+        scoreKeeper.clear();
+      }else{
+        setState(() {
+          quizBrain.nextQuestion();
+        });
+      }
+  }
+ Widget True = Icon(
+   Icons.check,
+   color: Colors.green,
+ );
+
+  Widget False = Icon(
+    Icons.close,
+    color: Colors.red,
+  );
+
+  int questionsNumber = 0;
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -37,7 +82,8 @@ class _QuizPageState extends State<QuizPage> {
             padding: EdgeInsets.all(10.0),
             child: Center(
               child: Text(
-                'This is where the question text will go.',
+                quizBrain.getQuestion(),
+                //quizBrain.questionBank[questionsNumber].questionText,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 25.0,
@@ -62,7 +108,9 @@ class _QuizPageState extends State<QuizPage> {
               ),
               onPressed: () {
                 //The user picked true.
-              },
+                checkAnswer(true);
+              }
+
             ),
           ),
         ),
@@ -79,16 +127,20 @@ class _QuizPageState extends State<QuizPage> {
                 ),
               ),
               onPressed: () {
-                //The user picked false.
+                checkAnswer(false);
               },
             ),
           ),
         ),
-        //TODO: Add a Row here as your score keeper
+        Row(
+          children: scoreKeeper,
+        ),
       ],
     );
   }
 }
+
+
 
 /*
 question1: 'You can lead a cow down stairs but not up stairs.', false,
